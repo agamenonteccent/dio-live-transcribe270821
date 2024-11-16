@@ -3,6 +3,39 @@ import uuid
 import json
 
 def lambda_handler(event, context):
+    transcribe = boto3.client('transcribe')
+    job_name = "TranscribeJobExample"
+    job_uri = event['s3_input_uri']
+    
+    transcribe.start_transcription_job(
+        TranscriptionJobName=job_name,
+        Media={'MediaFileUri': job_uri},
+        MediaFormat='mp3',
+        LanguageCode='en-US',
+        OutputBucketName=event['s3_output_bucket']
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Transcription job started!')
+    }
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::transcribe-output-bucket/*"
+    }
+  ]
+}
+
+  "s3_input_uri": "s3://transcribe-input-bucket/audiofile.mp3",
+  "s3_output_bucket": "transcribe-output-bucket"
 
     record = event['Records'][0] # arquivo enviado pelo trigger após o upload no S3
     
